@@ -47,7 +47,7 @@ object ProcessList {
 
         KERNEL32.CloseHandle(snapshot)
 
-        WindowUtils.getAllWindows(false).forEach { window ->
+        WindowUtils.getAllWindows(true).forEach { window ->
             val pid = IntByReference()
             USER32.GetWindowThreadProcessId(window.hwnd, pid)
             val proc = processes.firstOrNull { it.id == pid.value } ?: return@forEach

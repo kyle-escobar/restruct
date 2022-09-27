@@ -9,7 +9,6 @@ import javafx.scene.Scene
 import javafx.stage.Stage
 import tornadofx.FX
 import tornadofx.Fragment
-import tornadofx.find
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -32,7 +31,7 @@ class Window {
         frame.preferredSize = frame.size
         frame.layout = BorderLayout()
         frame.setLocationRelativeTo(null)
-        frame.jMenuBar = frame.menubar()
+        frame.jMenuBar = menubar()
         frame.iconImages = listOf(ImageIcon(Window::class.java.getResource("/images/restruct.png")).image)
     }
 
@@ -51,10 +50,10 @@ class Window {
         frame.isVisible = false
     }
 
-    private fun JFrame.menubar() = menubar {
+    private fun menubar() = menubar {
         menu("File") {
             item("Attach to Process") {
-                onClick { openModal(find<AttachProcessDialog>()) }
+                onClick { openModal(AttachProcessDialog()) }
             }
             separator()
             item("Exit") {
@@ -74,7 +73,8 @@ class Window {
     private fun openModal(view: Fragment) {
         val dialog = object : JDialog(frame) {
             init {
-                size = Dimension(500, 400)
+                title = view.title
+                size = Dimension(500, 600)
                 preferredSize = size
                 setLocationRelativeTo(null)
             }
