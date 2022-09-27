@@ -3,7 +3,6 @@ package dev.restruct.app
 import dev.restruct.app.ui.UI
 import dev.restruct.app.util.inject
 import org.koin.core.context.startKoin
-import org.koin.dsl.module
 import org.tinylog.kotlin.Logger
 import kotlin.system.exitProcess
 

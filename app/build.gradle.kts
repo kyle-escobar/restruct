@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":natives"))
     implementation("org.tinylog:tinylog-api-kotlin:_")
     implementation("org.tinylog:tinylog-impl:_")
     implementation("no.tornado:tornadofx:_")

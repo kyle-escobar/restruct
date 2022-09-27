@@ -1,102 +1,117 @@
 package dev.restruct.app.ui
 
-import dev.restruct.app.Restruct
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatAtomOneDarkContrastIJTheme
+import dev.restruct.app.ui.dialog.AttachProcessDialog
 import dev.restruct.app.util.inject
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.scene.Scene
 import javafx.stage.Stage
 import tornadofx.FX
+import tornadofx.Fragment
+import tornadofx.find
 import java.awt.BorderLayout
 import java.awt.Dimension
-import javax.swing.ImageIcon
-import javax.swing.JFrame
-import javax.swing.JMenu
-import javax.swing.JMenuBar
-import javax.swing.JMenuItem
-import javax.swing.SwingUtilities
+import javax.swing.*
+import kotlin.system.exitProcess
 
-class Window : JFrame("Restruct") {
+class Window {
 
-    lateinit var app: RestructApp private set
+    private val ui: UI by inject()
+
+    var frame: JFrame
 
     init {
-        defaultCloseOperation = EXIT_ON_CLOSE
-        size = Dimension(1000, 800)
-        preferredSize = size
-        minimumSize = Dimension(300, 300)
-        layout = BorderLayout()
-        setLocationRelativeTo(null)
-        iconImage = ImageIcon(Window::class.java.getResource("/images/restruct.png")).image
-        jMenuBar = MenuBar()
+        JFrame.setDefaultLookAndFeelDecorated(true)
+        JDialog.setDefaultLookAndFeelDecorated(true)
+        FlatAtomOneDarkContrastIJTheme.setup()
+
+        frame = JFrame("Restruct")
+        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.size = Dimension(1000, 650)
+        frame.preferredSize = frame.size
+        frame.layout = BorderLayout()
+        frame.setLocationRelativeTo(null)
+        frame.jMenuBar = frame.menubar()
+        frame.iconImages = listOf(ImageIcon(Window::class.java.getResource("/images/restruct.png")).image)
     }
 
     fun open() {
-        SwingUtilities.invokeLater {
-            val jfxPanel = JFXPanel()
-            this.add(jfxPanel)
-
-            Platform.runLater {
-                app = RestructApp()
-                val stage = Stage()
-                app.start(stage)
-
-                jfxPanel.scene = app.scene
-                isVisible = true
-            }
+        val fxPanel = JFXPanel()
+        frame.add(fxPanel, BorderLayout.CENTER)
+        frame.isVisible = true
+        Platform.runLater {
+            ui.app = UIApp()
+            ui.app.start(Stage())
+            fxPanel.scene = ui.app.scene
         }
     }
 
     fun close() {
-        isVisible = false
+        frame.isVisible = false
     }
 
-    inner class MenuBar : JMenuBar() {
-
-        private val restruct: Restruct by inject()
-
-        init {
-            /*
-             * File Menu
-             */
-            JMenu("File").also { menu ->
-                JMenuItem("Close").also {
-                    it.addActionListener { restruct.stop() }
-                    menu.add(it)
+    private fun JFrame.menubar() = menubar {
+        menu("File") {
+            item("Attach to Process") {
+                onClick { openModal(find<AttachProcessDialog>()) }
+            }
+            separator()
+            item("Exit") {
+                onClick {
+                    exitProcess(0)
                 }
-                add(menu)
-            }
-
-            /*
-             * Edit Menu
-             */
-            JMenu("Edit").also { menu ->
-                add(menu)
-            }
-
-            /*
-             * View Menu
-             */
-            JMenu("View").also { menu ->
-                add(menu)
-            }
-
-            /*
-             * Tools Menu
-             */
-            JMenu("Tools").also { menu ->
-                add(menu)
-            }
-
-            /*
-             * Help Menu
-             */
-            JMenu("Help").also { menu ->
-                JMenuItem("About").also {
-                    menu.add(it)
-                }
-                add(menu)
             }
         }
+        menu("Edit")
+        menu("View")
+        menu("Tools")
+        menu("Help)") {
+            item("About")
+        }
+    }
+
+    private fun openModal(view: Fragment) {
+        val dialog = object : JDialog(frame) {
+            init {
+                size = Dimension(500, 400)
+                preferredSize = size
+                setLocationRelativeTo(null)
+            }
+        }
+        val fxPanel = JFXPanel()
+        dialog.contentPane.add(fxPanel)
+        Platform.runLater {
+            fxPanel.scene = Scene(view.root)
+            FX.applyStylesheetsTo(fxPanel.scene)
+            dialog.isVisible = true
+        }
+    }
+
+    private fun menubar(block: JMenuBar.() -> Unit): JMenuBar {
+        val menubar = JMenuBar()
+        menubar.block()
+        return menubar
+    }
+
+    private fun JMenuBar.menu(title: String, block: JMenu.() -> Unit = {}) {
+        val menu = JMenu(title)
+        menu.block()
+        this.add(menu)
+    }
+
+    private fun JMenu.item(title: String, block: JMenuItem.() -> Unit = {}) {
+        val item = JMenuItem(title)
+        item.block()
+        this.add(item)
+    }
+
+    private fun JMenu.separator() {
+        val separator = JSeparator()
+        this.add(separator)
+    }
+
+    private fun JMenuItem.onClick(block: () -> Unit) {
+        this.addActionListener { block() }
     }
 }
